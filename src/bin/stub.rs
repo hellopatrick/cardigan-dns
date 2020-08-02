@@ -27,12 +27,8 @@ fn main() {
   p.write(&mut buffer);
 
   buffer.seek(0);
-
-  // ...and send it off to the server using our socket:
   socket.send_to(buffer.bytes(), server).unwrap();
 
-  // To prepare for receiving the response, we'll create a new `BytePacketBuffer`,
-  // and ask the socket to write the response directly into our buffer.
   let mut src = [0; 512];
 
   socket.recv_from(&mut src).unwrap();
