@@ -1,9 +1,9 @@
 use crate::Buffer;
-use bytes::Buf;
+use bytes::{Buf, BufMut};
 
 const RECURSION_LIMIT: u8 = 16;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Name(pub String);
 
 impl Name {
@@ -54,5 +54,34 @@ impl Name {
     }
 
     Self(name)
+  }
+
+  pub fn write(&self, buf: &mut Buffer) {
+    let s = &self.0;
+    let mut bytes = Vec::with_capacity(s.len());
+
+    for part in s.split('.') {
+      let len = part.len();
+
+      if len > 0x3F {
+        panic!("label too long")
+      }
+
+      bytes.push(len as u8);
+      bytes.extend_from_slice(part.as_bytes());
+    }
+
+    buf.put_slice(&bytes);
+  }
+
+  pub fn len(&self) -> usize {
+    let s = &self.0;
+    s.split('.').map(|x| x.len() + 1).sum()
+  }
+}
+
+impl From<&str> for Name {
+  fn from(name: &str) -> Self {
+    Self(name.into())
   }
 }

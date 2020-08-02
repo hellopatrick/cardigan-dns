@@ -1,7 +1,7 @@
 use crate::buffer::Buffer;
-use bytes::Buf;
+use bytes::{Buf, BufMut};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum ResponseCode {
   NoError = 0,
   FormatError = 1,
@@ -24,7 +24,7 @@ impl From<u16> for ResponseCode {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Header {
   pub id: u16,
 
@@ -110,5 +110,24 @@ impl Header {
     res.additional_resource_records_count = buf.get_u16();
 
     res
+  }
+
+  pub fn write(&self, buf: &mut Buffer) {
+    buf.put_u16(self.id);
+
+    buf.put_u8(
+      self.is_recusion_desired as u8
+        | (self.is_truncated as u8) << 1
+        | (self.is_authoritative as u8) << 2
+        | self.opcode << 3
+        | (self.is_reply as u8) << 7,
+    );
+
+    buf.put_u8(self.response_code as u8 | self.z << 4 | (self.is_recusion_allowed as u8) << 7);
+
+    buf.put_u16(self.question_count);
+    buf.put_u16(self.answer_count);
+    buf.put_u16(self.authority_resource_records_count);
+    buf.put_u16(self.additional_resource_records_count);
   }
 }

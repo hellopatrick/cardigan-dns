@@ -1,17 +1,27 @@
 use cardigan::packet::Packet;
 
 fn main() {
-  let b = include_bytes!("../data/cnn_query_packet.txt");
-  let mut b = cardigan::Buffer::from_bytes(b);
+  let bytes = include_bytes!("../data/cnn_query_packet.txt");
+  let mut buf = cardigan::Buffer::from_bytes(bytes);
+  let packet = Packet::parse(&mut buf);
 
-  let header = Packet::parse(&mut b);
+  println!("buffer- = {:?}", buf);
+  println!("packet = {:?}", packet);
 
-  println!("query = {:#?}", header);
+  let mut buf = cardigan::Buffer::default();
+  packet.write(&mut buf);
 
-  let b = include_bytes!("../data/cnn_response_packet.txt");
-  let mut b = cardigan::Buffer::from_bytes(b);
+  println!("buffer+ = {:?}", buf);
 
-  let header = Packet::parse(&mut b);
+  let bytes = include_bytes!("../data/cnn_response_packet.txt");
+  let mut buf = cardigan::Buffer::from_bytes(bytes);
+  let packet = Packet::parse(&mut buf);
 
-  println!("resp = {:#?}", header);
+  println!("buffer- = {:?}", buf);
+  println!("packet = {:?}", packet);
+
+  let mut buf = cardigan::Buffer::default();
+  packet.write(&mut buf);
+
+  println!("buffer+ = {:?}", buf);
 }
